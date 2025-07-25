@@ -1,8 +1,30 @@
+import axios from 'axios';
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 
 export default function Login() {
     const [show, setshow] = useState(false)
+    const [password, setPassword] = useState('');
+    const [email, setEmail] = useState('');
+    const navigate = useNavigate();
+
+  const handleSubmit = async(e) => {
+    e.preventDefault()
+    console.log("first")
+    await axios.post('http://localhost:8080/api/v1/users/login', {
+      email,
+      password
+    })
+      .then((res) => {
+        toast.success(res.data.message)
+        navigate('/home')
+      })
+      .catch((err) => {
+        toast.error(err.response.data.message)
+      })
+  }
+
   return (
     <div className="min-h-screen flex font-poppins bg-[#EDF4F2]">
       {/* Left Side with clip-path */}
@@ -26,16 +48,18 @@ export default function Login() {
         <div className="w-full max-w-md">
           <h2 className="text-3xl text-[#31473A] lg:text-start text-center font-bold mb-8">Login Account</h2>
 
-          <form className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-6">
 
             <input
               type="email"
+              onChange={(e)=>setEmail(e.target.value)}
               placeholder="Email Address"
               className="w-full border-b border-[#31473A] bg-transparent focus:outline-none py-2 text-sm"
             />
             <div className="relative">
               <input
                 type={show?"text":"password"}
+                onChange={(e)=>setPassword(e.target.value)}
                 placeholder="Password"
                 className="w-full border-b border-[#31473A] bg-transparent focus:outline-none py-2 text-sm pr-8"
               />

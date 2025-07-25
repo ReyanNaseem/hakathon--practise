@@ -1,12 +1,16 @@
-import React, { useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import React, { useEffect, useRef, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 
 const OtpInput = () => {
-  const length = 6;
+  const length = 4;
   const [otp, setOtp] = useState(new Array(length).fill(""));
   const inputRefs = useRef([]);
   const [message, setMessage] = useState("");
   const navigate = useNavigate();
+  const [email, setEmail] = useState('');
+  const inputsRef = useRef([]);
+  const location = useLocation();
 
   const handleChange = (element, index) => {
     const val = element.value.replace(/[^0-9]/g, "");
@@ -34,23 +38,51 @@ const OtpInput = () => {
     }
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async() => {
     const fullOtp = otp.join("");
     if (fullOtp.length === length) {
-      setMessage("✅ OTP verified successfully!");
-      navigate('/login')
-      // TODO: send OTP to server
+      try {
+        console.log("first")
+        const res = await axios.post(`http://localhost:8080/api/v1/users/verify`, {
+          email: email,
+          otp: Number(fullOtp)
+        });
+        localStorage.removeItem('otpEmail'); // ✅ Clear email after verification
+        console.log(res)
+        navigate('/login');
+
+      } catch (err) {
+
+        console.log(err)
+
+      }
     } else {
       setMessage("❌ Please enter all 6 digits of the OTP.");
     }
   };
+
+  useEffect(() => {
+    const emailFromState = location.state?.email;
+    if (emailFromState) {
+      setEmail(emailFromState);
+      localStorage.setItem('otpEmail', emailFromState); // Save for refresh
+    } else {
+      const emailFromStorage = localStorage.getItem('otpEmail');
+      if (emailFromStorage) {
+        setEmail(emailFromStorage);
+      } else {
+        alert("No email found. Redirecting to signup...");
+        navigate('/'); // Redirect if no email
+      }
+    }
+  }, [location.state, navigate]);
 
   return (
     <div className="h-screen flex items-center justify-center bg-[#EDF4F2] px-4">
       <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md text-center">
         <h1 className="text-3xl font-bold text-[#31473A] mb-2">OTP Verification</h1>
         <p className="text-gray-600 mb-6">
-          Please enter the 6-digit code sent to your email or phone number.
+          Please enter the 4-digit code sent to your email or phone number.
         </p>
 
         <div className="flex justify-center gap-2 mb-4">

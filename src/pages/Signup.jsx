@@ -1,12 +1,58 @@
+import axios from 'axios';
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 
 export default function Signup() {
   const [show, setshow] = useState(false)
   const navigate = useNavigate();
+  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState('');
+  const [userName, setUserName] = useState('');
+  // const [imageUrl, setimageUrl] = useState('');
+  const [imageFile, setImageFile] = useState(null)
 
-const handleSubmit = ()=>{
-  navigate('/verify');
+const handleSubmit = async(e)=>{
+  e.preventDefault();
+
+  let imageurl = "";
+
+    const imageData = new FormData();
+    imageData.append("image", imageFile);
+
+    const res = await axios.post(
+      `http://localhost:8080/api/v1/users/upload`,
+      imageData
+    ).then((res)=>{
+      toast.success(res.data.message)
+    }).catch((err)=>{
+      toast.error(err.response.data.message)
+    })
+
+    imageurl = res.data.imageUrl;
+
+    const sendData = {
+      userName,
+      email,
+      password,
+      imageUrl: imageurl,
+    };
+
+  await axios.post('http://localhost:8080/api/v1/users/signup',sendData)
+  .then((res)=>{
+    console.log(res);
+    toast.success(res.data.message)
+    navigate('/verify',{
+      state: {
+        email: sendData.email
+      },
+    })
+  })
+  .catch((err)=>{
+    console.log(err)
+    toast.error(err.response.data.message)
+  })
+
 }
 
   return (
@@ -48,22 +94,30 @@ const handleSubmit = ()=>{
           <form className="space-y-6" onSubmit={handleSubmit}>
             <input
               type="text"
+              onChange={(e)=>setUserName(e.target.value)}
               placeholder="Full Name"
               className="w-full border-b border-[#31473A] bg-transparent focus:outline-none py-2 text-sm"
             />
             <input
               type="email"
+              onChange={(e)=>setEmail(e.target.value)}
               placeholder="Email Address"
               className="w-full border-b border-[#31473A] bg-transparent focus:outline-none py-2 text-sm"
             />
             <div className="relative">
               <input
                 type={show?"text":"password"}
+                onChange={(e)=>setPassword(e.target.value)}
                 placeholder="Password"
                 className="w-full border-b border-[#31473A] bg-transparent focus:outline-none py-2 text-sm pr-8"
               />
               <i onClick={()=>setshow(!show)} className={`${show?"ri-eye-off-line":"ri-eye-line"} absolute right-2 top-2 text-gray-500 cursor-pointer text-lg`}></i>
             </div>
+            <input
+              type="file"
+              onChange={(e)=>setImageFile(e.target.files[0])}
+              className="w-full border-b bg-transparent focus:outline-none py-2 text-sm"
+            />
             <button
               type="submit"
               className="w-full bg-[#31473A] text-white py-2 rounded-md font-semibold hover:bg-[#31473A]"
