@@ -23,11 +23,7 @@ const handleSubmit = async(e)=>{
     const res = await axios.post(
       `http://localhost:8080/api/v1/users/upload`,
       imageData
-    ).then((res)=>{
-      toast.success(res.data.message)
-    }).catch((err)=>{
-      toast.error(err.response.data.message)
-    })
+    )
 
     imageurl = res.data.imageUrl;
 
