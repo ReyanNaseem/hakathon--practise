@@ -48,13 +48,11 @@ const OtpInput = () => {
           otp: Number(fullOtp)
         });
         localStorage.removeItem('otpEmail'); // ✅ Clear email after verification
-        console.log(res)
+        toast.success(res.data.message)
         navigate('/login');
 
       } catch (err) {
-
-        console.log(err)
-
+        toast.error(err.response.data.message)
       }
     } else {
       setMessage("❌ Please enter all 6 digits of the OTP.");
